@@ -1,16 +1,17 @@
 #include <iostream>
-#include<vector>
+#include <vector>
+#include <memory>
 
 template<typename T, class Node_>
 class AbstractTree
 {
 public:
-    virtual Node_* find(T value_)
+    virtual std::shared_ptr<Node_> find(T value_)
     {
         return nullptr;
     }
 
-    virtual Node_* insert(T value_)
+    virtual std::shared_ptr<Node_> insert(T value_)
     {
         return nullptr;
     }
@@ -28,23 +29,36 @@ class Node
 private:
     T value;
     size_t height;
-    Node* left;
-    Node* right;
+    std::shared_ptr<Node<T>> left;
+    std::shared_ptr<Node<T>>  right;
 public:
+    Node();
     Node(T value_);
 
-    Node* insert(T value_);
+    std::shared_ptr<Node<T>> insert(T value_);
+
+    std::shared_ptr<Node<T>> find(T value_);
+    
+    size_t get_height();
+
+    void reheight();
+
+    int balance_factor();
 
     bool erase(T value_);
 
-    ~Node(){};
+    std::shared_ptr<Node<T>> right_rotaion();
+    std::shared_ptr<Node<T>> left_rotation();
+
+    std::shared_ptr<Node<T>> rebalance();
+
 };
 
 template<typename T, class Node_>
 class AVLtree : public AbstractTree<T, Node_>
 {
 private:
-    Node_* root;
+    std::shared_ptr<Node_> root;
 
 public:
     AVLtree();
@@ -54,15 +68,13 @@ public:
     AVLtree(std::vector<T> values_)
     {
         for(auto value_ : values_)
-            root = new Node_(value_);
+            root = std::shared_ptr<Node_> (new Node_(value_));
     }
 
-    Node_* insert(T value);
+    std::shared_ptr<Node_> insert(T value);
 
-    Node_* find(T value);
+    std::shared_ptr<Node_> find(T value);
 
     bool erase(T value);
-
-    ~AVLtree(){};
 
 };
