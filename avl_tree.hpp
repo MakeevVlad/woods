@@ -54,7 +54,7 @@ public:
 
 };
 
-template<typename T, class Node_>
+template<typename T, class Node_ = Node<T>>
 class AVLtree : public AbstractTree<T, Node_>
 {
 private:

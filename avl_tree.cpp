@@ -94,7 +94,49 @@ std::shared_ptr<Node<T>> Node<T>:: left_rotation()
 template<typename T>
 std::shared_ptr<Node<T>> Node<T>::rebalance()
 {
+    if (this->balance_factor() == 2)
+    {
+        if (this->right->balance_factor() >= 0)
+        {
+            this->left_rotation();
 
+            this->left->reheight();
+            this->reheight();
+        }
+        else
+        {
+            this->righ->right_rotation();
+            this->left_rotation();
+
+            this->left->reheight();
+            this->right->reheight();
+            this->reheight();
+        }
+    }
+    else 
+    {
+        if (this->left->balance_factor() <= 0)
+        {
+            this->right_rotaion;
+
+            this->right->reheight();
+            this->reheight();
+        }
+        else
+        {
+            this->left->left_rotation();
+            this->right_rotaion();
+
+            this->left->reheight();
+            this->right->reheight();
+            this->reheight();
+        }
+    }
+}
+template<typename T>
+std::shared_ptr<Node<T>> Node<T>::insert(T value)
+{
+    
 }
 int main()
 {
