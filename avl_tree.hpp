@@ -26,12 +26,12 @@ public:
 template<typename T>
 class Node
 {
-private:
+public:
     T value;
     size_t height;
     std::shared_ptr<Node<T>> left;
     std::shared_ptr<Node<T>>  right;
-public:
+
     Node();
     Node(T value_);
 
@@ -39,7 +39,7 @@ public:
 
     std::shared_ptr<Node<T>> find(T value_);
     
-    size_t get_height();
+    
 
     void reheight();
 
@@ -47,20 +47,26 @@ public:
 
     bool erase(T value_);
 
-    std::shared_ptr<Node<T>> right_rotaion();
+    std::shared_ptr<Node<T>> right_rotation();
     std::shared_ptr<Node<T>> left_rotation();
 
     std::shared_ptr<Node<T>> rebalance();
 
+    T show()
+    {
+        return value;
+    }
+
 };
+template<typename T>
+size_t get_height(std::shared_ptr<Node<T>>);
 
 template<typename T, class Node_ = Node<T>>
 class AVLtree : public AbstractTree<T, Node_>
 {
-private:
+public:
     std::shared_ptr<Node_> root;
 
-public:
     AVLtree();
 
     AVLtree(T value_);
