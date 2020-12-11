@@ -10,25 +10,39 @@ AVLtree<T, Node_>::AVLtree()
 template<typename T, class Node_>
 AVLtree<T, Node_>::AVLtree(T value_)
 {
-    root = std::shared_ptr<Node_> (new Node_(value_));
+    root = new Node_(value_);
+}
+
+template<typename T, class Node_>
+AVLtree<T, Node_>::~AVLtree()
+{
+    if(root != nullptr)
+        root->clear();
 }
 
 //====Functions for AVLtree======================================
 template<typename T, class Node_>
-std::shared_ptr<Node_> AVLtree<T, Node_>::insert(T value_)
+Node_* AVLtree<T, Node_>::insert(T value_)
 {
-    return  root->insert(value_);
+    if(root == nullptr)
+        root = new Node<T>(value_);
+    else
+        root = root->insert(value_);
+    return  root;
 }
 template<typename T, class Node_>
-std::shared_ptr<Node_> AVLtree<T, Node_>::find(T value_)
+Node_* AVLtree<T, Node_>::find(T value_)
 {
-    return nullptr;//root->find(value_);
+    return root->find(value_);
 }
 
 template<typename T, class Node_>
 bool AVLtree<T, Node_>::erase(T value_)
 {
-    return 0;//root->erase(value_);
+    if(root == nullptr)
+        return 0;
+    root = root->erase(value_);
+    return 1;//root->erase(value_);
 }
 
 
@@ -53,7 +67,18 @@ Node<T>::Node(T value_)
 
 //====Functions for Node=========================================
 template<typename T>
-size_t get_height(std::shared_ptr<Node<T>> p)
+void Node<T>::clear()
+{
+    if(this->right != nullptr)
+        this->right->clear();
+    if(this->left != nullptr)
+        this->left->clear();
+
+    delete this;
+}
+
+template<typename T>
+size_t get_height(Node<T>* p)
 {
     if(p == nullptr)
         return 0;
@@ -73,23 +98,23 @@ int Node<T>::balance_factor()
 }
 
 template<typename T>
-std::shared_ptr<Node<T>> Node<T>:: right_rotation()
+Node<T>* Node<T>:: right_rotation()
 {
-    std::shared_ptr<Node<T>> node_tmp = this->left;
+    Node<T>* node_tmp = this->left;
     this->left = node_tmp->right;
-    node_tmp->right.reset(this);
+    node_tmp->right= this;
     this->reheight();
     node_tmp->reheight();
     return node_tmp;
 }
 
 template<typename T>
-std::shared_ptr<Node<T>> Node<T>:: left_rotation()
+Node<T>* Node<T>:: left_rotation()
 {   
     //std::cout << "I'm here!" << std::endl;
-    std::shared_ptr<Node<T>> node_tmp = this->right;
+    Node<T>* node_tmp = this->right;
     this->right = node_tmp->left;
-    node_tmp->left.reset(this);
+    node_tmp->left = this;
     this->reheight();
     node_tmp->reheight();
     
@@ -97,7 +122,7 @@ std::shared_ptr<Node<T>> Node<T>:: left_rotation()
 }
 
 template<typename T>
-std::shared_ptr<Node<T>> Node<T>::rebalance()
+Node<T>* Node<T>::rebalance()
 {
     this->reheight();
     
@@ -116,24 +141,25 @@ std::shared_ptr<Node<T>> Node<T>::rebalance()
         return this->right_rotation();
     }
     
-    return nullptr;
+    
+    return this;
 }
 template<typename T>
-std::shared_ptr<Node<T>> Node<T>::insert(T value_)
+Node<T>* Node<T>::insert(T value_)
 {
 
     if( value_ < this->value)
     {
         if (this->left == nullptr)
-            this->left = std::shared_ptr<Node<T>> (new Node<T>(value_));
+            this->left = new Node<T>(value_);
         else 
             this->left = this->left->insert(value_);
     }
-    else if( value_ > this->value)
+    if( value_ > this->value)
     {
         
         if (this->right == nullptr)
-            this->right = std::shared_ptr<Node<T>> (new Node<T>(value_));
+            this->right = new Node<T>(value_);
         else
             this->right = this->right->insert(value_);
     }
@@ -142,7 +168,7 @@ std::shared_ptr<Node<T>> Node<T>::insert(T value_)
     
 }
 template<typename T>
-void print_Tree(std::shared_ptr<Node<T>> p,int level)
+void print_Tree(Node<T>* p,int level)
 {
     if(p)
     {
@@ -153,23 +179,72 @@ void print_Tree(std::shared_ptr<Node<T>> p,int level)
     }
 }
 
-
-
-int main()
+template<typename T>
+Node<T>* Node<T>::min_knot()
 {
-    AVLtree<int> tree(0);
-    //std::cout << tree.root->show();
-    int a;
-    while(std::cin >> a)
+    if(this->left != nullptr)
+        return this->left->min_knot();
+    return this;
+}
+template<typename T>
+Node<T>* Node<T>::min_erase()
+{
+    if(!this->left)
+        return this->right;
+    this->left = this->left->min_erase();
+    return this->rebalance();
+}
+template<typename T>
+Node<T>* Node<T>::erase(T value_)
+{
+    if(value_ < this->value)
     {
-        tree.insert(a);
-    print_Tree(tree.root, 0);
-    std::cout << "==>";}
-    /*
-    for(int i = -100; i < -93; ++i)
-    {
-        tree.insert(i);
+        //std::cout << "if_section" << std::endl;
+        if(this->left == nullptr)
+            return nullptr;
+        this->left = this->left->erase(value_);
     }
-    tree.insert(-93);*/
-    return 0;
+    else if(value_ > this->value)
+    {
+        if(this->right == nullptr)
+            return nullptr;
+        this->right = this->right->erase(value_);
+    }
+    else
+    {
+
+        Node<T>* node_tmp_l = this->left;
+        Node<T>* node_tmp_r = this->right;
+        delete this;
+        if(node_tmp_r == nullptr)
+            return node_tmp_l;
+        Node<T>* node_tmp_min =node_tmp_r-> min_knot();
+
+        node_tmp_min->right = node_tmp_r->min_erase();
+        node_tmp_min->left = node_tmp_l;
+        return node_tmp_min->rebalance();
+    }
+
+    return this->rebalance();
+    
+}
+
+template<typename T>
+Node<T>* Node<T>::find(T value_)
+{
+    if(this->value == value_)
+        return this;
+
+    if(this->value < value_ )
+    {
+        if(this->right == nullptr)
+            return nullptr;
+        return this->right->find(value_);
+    }
+    else
+    {
+        if(this->left == nullptr)
+                return nullptr;
+        return this->left->find(value_);
+    }
 }
